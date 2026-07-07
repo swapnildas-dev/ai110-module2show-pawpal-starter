@@ -1,7 +1,7 @@
 """Class scaffolding for PawPal+, generated from diagrams/uml.mmd."""
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -10,6 +10,7 @@ class Task:
     duration: int
     priority: str
     completed: bool = False
+    pet_name: Optional[str] = None
 
     def mark_complete(self) -> None:
         pass
