@@ -44,11 +44,11 @@
 
 **a. What you tested**
 
-- Right now I haven't actually tested any behaviors yet because generate_schedule(), sort_tasks(), and the other methods are still just stubs with pass — there's no real logic to run. The only thing I've "tested" so far is making sure the classes actually match the UML and that the file runs without errors.
+- Now that the scheduling logic is actually implemented, I have 13 pytest tests covering the main behaviors instead of just checking that the file runs. I tested that mark_complete() flips a task's completed status and that add_task() actually adds to a pet's task list, since those are the most basic building blocks everything else depends on. I also tested sort_by_time() with three tasks added out of order (plus a case where one task has no time set, to make sure it gets pushed to the end instead of crashing or sorting weirdly). For recurrence, I tested that completing a daily task creates a new task dated exactly one day later, and a weekly one creates a task a week later, and that the new task actually ends up in the same pet's list. For conflict detection I tested both that overlapping times (and duplicate start times) get flagged, and that back-to-back tasks or tasks on different dates do NOT get flagged, since I wanted to make sure the conflict checker isn't just returning true for everything.
 
 **b. Confidence**
 
-- I can't say I'm confident the scheduler works correctly since none of the scheduling logic exists yet — that part is still ahead of me. Once I implement it, I'd want to test edge cases like available_time being 0, a pet with no tasks, multiple tasks with the same priority, and a Task with pet_name left as None to make sure display_schedule() doesn't break.
+- I'm fairly confident in the pieces I actually wrote tests for — sorting, filtering, recurrence, and conflict detection all pass, including the "should NOT flag this" cases, which is what makes me trust it's not just accidentally working. I'm less confident about things I haven't tested yet, like generate_schedule() when available_time is 0 or when a pet has no tasks at all, or what happens if two recurring tasks interact with the schedule on the same day. Those would be the edge cases I'd test next if I had more time.
 
 ---
 

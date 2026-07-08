@@ -31,13 +31,38 @@ def test_sort_by_time_orders_tasks_chronologically():
     pet = Pet(name="Rex", species="dog", age=3)
     owner.add_pet(pet)
     pet.add_task(Task(name="Evening", duration=10, priority="low", time="18:00"))
+    pet.add_task(Task(name="Afternoon", duration=10, priority="low", time="13:30"))
     pet.add_task(Task(name="Morning", duration=10, priority="low", time="07:00"))
 
     scheduler = Scheduler(owner=owner)
     scheduler.schedule = pet.get_tasks()
     scheduler.sort_by_time()
 
-    assert [task.name for task in scheduler.schedule] == ["Morning", "Evening"]
+    assert [task.name for task in scheduler.schedule] == ["Morning", "Afternoon", "Evening"]
+
+
+def test_sort_by_time_places_untimed_tasks_last():
+    owner = Owner(name="Jordan", available_time=120)
+    pet = Pet(name="Rex", species="dog", age=3)
+    owner.add_pet(pet)
+    pet.add_task(Task(name="No Time Set", duration=10, priority="low"))
+    pet.add_task(Task(name="Morning", duration=10, priority="low", time="07:00"))
+
+    scheduler = Scheduler(owner=owner)
+    scheduler.schedule = pet.get_tasks()
+    scheduler.sort_by_time()
+
+    assert [task.name for task in scheduler.schedule] == ["Morning", "No Time Set"]
+
+
+def test_remove_task_removes_only_matching_task():
+    pet = Pet(name="Rex", species="dog", age=3)
+    pet.add_task(Task(name="Walk", duration=20, priority="high"))
+    pet.add_task(Task(name="Feed", duration=10, priority="high"))
+
+    pet.remove_task("Walk")
+
+    assert [task.name for task in pet.get_tasks()] == ["Feed"]
 
 
 def test_filter_by_pet_returns_only_that_pets_tasks():
@@ -115,3 +140,42 @@ def test_find_conflicts_detects_overlapping_times():
     assert len(conflicts) == 1
     names = {conflicts[0][0].name, conflicts[0][1].name}
     assert names == {"Walk", "Feed"}
+
+
+def test_find_conflicts_detects_duplicate_start_times():
+    owner = Owner(name="Jordan", available_time=120)
+    pet = Pet(name="Rex", species="dog", age=3)
+    owner.add_pet(pet)
+    pet.add_task(Task(name="Walk", duration=20, priority="high", time="09:00", date="2026-01-01"))
+    pet.add_task(Task(name="Brush", duration=10, priority="low", time="09:00", date="2026-01-01"))
+
+    scheduler = Scheduler(owner=owner)
+    conflicts = scheduler.find_conflicts()
+
+    assert len(conflicts) == 1
+
+
+def test_find_conflicts_ignores_back_to_back_tasks():
+    owner = Owner(name="Jordan", available_time=120)
+    pet = Pet(name="Rex", species="dog", age=3)
+    owner.add_pet(pet)
+    pet.add_task(Task(name="Walk", duration=30, priority="high", time="08:00", date="2026-01-01"))
+    pet.add_task(Task(name="Feed", duration=30, priority="high", time="08:30", date="2026-01-01"))
+
+    scheduler = Scheduler(owner=owner)
+    conflicts = scheduler.find_conflicts()
+
+    assert conflicts == []
+
+
+def test_find_conflicts_ignores_tasks_on_different_dates():
+    owner = Owner(name="Jordan", available_time=120)
+    pet = Pet(name="Rex", species="dog", age=3)
+    owner.add_pet(pet)
+    pet.add_task(Task(name="Walk", duration=30, priority="high", time="08:00", date="2026-01-01"))
+    pet.add_task(Task(name="Feed", duration=30, priority="high", time="08:00", date="2026-01-02"))
+
+    scheduler = Scheduler(owner=owner)
+    conflicts = scheduler.find_conflicts()
+
+    assert conflicts == []

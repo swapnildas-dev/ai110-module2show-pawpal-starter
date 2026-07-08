@@ -57,18 +57,43 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 ## 🧪 Testing PawPal+
 
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest -v
 ```
+
+The test suite (`tests/test_pawpal.py`, 13 tests) covers:
+
+- **Core class behavior**: `Task.mark_complete()` flips `completed` to `True`, and `Pet.add_task()` increases that pet's task count.
+- **Sorting correctness**: `Scheduler.sort_by_time()` returns tasks in chronological order (including a 3-task case and a case where an untimed task is correctly pushed to the end).
+- **Filtering**: `Scheduler.filter_by_pet()` and `filter_by_completion()` return only the matching tasks.
+- **Recurrence logic**: marking a `"daily"` task complete creates a new incomplete task dated exactly one day later, and a `"weekly"` task creates one dated a week later — both attached to the original pet.
+- **Conflict detection**: `Scheduler.find_conflicts()` flags overlapping times and duplicate start times, and correctly reports *no* conflict for back-to-back tasks or tasks on different dates (negative cases, to catch false positives).
+- **Editing tasks**: `Pet.remove_task()` removes only the named task and leaves the rest untouched.
 
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+platform darwin -- Python 3.13.9, pytest-8.4.2, pluggy-1.5.0
+collected 13 items
+
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [  7%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [ 15%]
+tests/test_pawpal.py::test_sort_by_time_orders_tasks_chronologically PASSED [ 23%]
+tests/test_pawpal.py::test_sort_by_time_places_untimed_tasks_last PASSED [ 30%]
+tests/test_pawpal.py::test_remove_task_removes_only_matching_task PASSED [ 38%]
+tests/test_pawpal.py::test_filter_by_pet_returns_only_that_pets_tasks PASSED [ 46%]
+tests/test_pawpal.py::test_filter_by_completion_returns_matching_tasks PASSED [ 53%]
+tests/test_pawpal.py::test_daily_recurring_task_creates_next_day_task PASSED [ 61%]
+tests/test_pawpal.py::test_weekly_recurring_task_creates_next_week_task PASSED [ 69%]
+tests/test_pawpal.py::test_find_conflicts_detects_overlapping_times PASSED [ 76%]
+tests/test_pawpal.py::test_find_conflicts_detects_duplicate_start_times PASSED [ 84%]
+tests/test_pawpal.py::test_find_conflicts_ignores_back_to_back_tasks PASSED [ 92%]
+tests/test_pawpal.py::test_find_conflicts_ignores_tasks_on_different_dates PASSED [100%]
+
+============================== 13 passed in 0.02s ===============================
 ```
+
+**Confidence: ⭐⭐⭐⭐☆ (4/5)** — every core scheduling behavior (sorting, filtering, recurrence, conflict detection) has both a positive and, where it matters, a negative test case, all passing. It's not a 5/5 because the suite only exercises `pawpal_system.py` directly; `app.py` (the Streamlit UI wiring) has no automated tests yet.
 
 ## 📐 Smarter Scheduling
 
