@@ -23,22 +23,29 @@
 
 **a. Constraints and priorities**
 
-- The scheduler considers the owner's available time, each task's duration, and each task's priority. I decided that priority should matter most because important tasks like feeding, medication, or walks should be scheduled before lower-priority tasks. Available time also matters because the schedule should not include more tasks than the owner can realistically complete.
+- The scheduler considers the owner's available time, each task's duration, and each task's priority. I decided that priority should matter most because important tasks like feeding, medication, or walks should be scheduled before lower-priority tasks. Available time also matters because the schedule should not include more tasks than the owner can realistically complete. Later on I added a `date` field to Task too, so `generate_schedule()` only looks at tasks scheduled for today instead of pulling in every task ever created — that mattered once recurring tasks started generating future-dated copies of themselves.
 
 **b. Tradeoffs**
 
-- One tradeoff is that lower-priority tasks may be skipped if there is not enough available time. This is reasonable because the scheduler should focus onv completing the most important pet care tasks first instead of trying to fit in every task.
+- One tradeoff is that lower-priority tasks may be skipped if there is not enough available time. This is reasonable because the scheduler should focus onv completing the most important pet care tasks first instead of trying to fit in every task. A second tradeoff came from making the schedule date-aware: a recurring task's next occurrence won't show up in today's schedule even if there's plenty of time left, since it's dated for tomorrow or next week. That's the correct behavior, but it means "today's schedule" and "everything a pet has to do" aren't the same list anymore — that's why filtering exists separately, to see the full picture.
 
 ## 3. AI Collaboration
 
 **a. How you used AI**
 
-- I used AI to help brainstorm the main classes, create the Mermaid UML diagram, generate the Python class skeleton, and review the design for missing relationships or possible logic issues. The AI feedback helped me notice that adding pet_name to Task would make the schedule easier to display later.
+- I used AI to help brainstorm the main classes, create the Mermaid UML diagram, generate the Python class skeleton, and review the design for missing relationships or possible logic issues. The AI feedback helped me notice that adding pet_name to Task would make the schedule easier to display later. The feature that helped the most was probably just being able to say "implement the logic now, keep the stubs from before" and having it actually respect what I'd already approved in the skeleton instead of rewriting everything from scratch. Same with the Streamlit wiring — I could describe what UI controls I wanted (sort buttons, filter dropdowns, a conflict-check button) and get something that actually calls the real Scheduler methods instead of fake placeholder logic.
 
 **b. Judgment and verification**
 
-- I did not accept every AI suggestion automatically. I reviewed the feedback and only made the pet_name change because it directly helped the project goal. I verified that the UML and pawpal_system.py still matched after the change.
----
+- I did not accept every AI suggestion automatically. I reviewed the feedback and only made the pet_name change because it directly helped the project goal. I verified that the UML and pawpal_system.py still matched after the change. One suggestion I didn't take: during the design review, it was suggested that I switch `priority` from a plain string to an enum or number so sorting would be more "correct." I decided not to do that — the `PRIORITY_ORDER` dict in Scheduler already maps "high"/"medium"/"low" to sortable numbers, so an enum would've been extra structure without actually fixing a real bug. I'd rather keep the field a plain string for a project this size.
+
+**c. Staying organized across phases**
+
+- Breaking the project into phases (UML → class skeleton → UI wiring → scheduling algorithms → tests → this polish pass) kept each conversation focused on one thing instead of trying to design and implement and test everything at once. It also made it easy to review — each phase's diff was small enough that I could actually read through what changed and decide if it was right, instead of getting a giant dump of code I'd just have to trust.
+
+**d. Being the lead architect**
+
+- Even though the AI wrote most of the actual code, all the real decisions were still mine: which four classes to use, when to add pet_name, when to say no to the priority-enum suggestion, and what each phase should even cover. What I learned is that using AI well isn't about handing over the design, it's closer to directing it — I still had to know what "done" looked like for each phase and check the output against that, instead of just assuming it was right because it ran without errors.
 
 ## 4. Testing and Verification
 
@@ -60,7 +67,7 @@
 
 **b. What you would improve**
 
-- If I did another iteration, I'd probably change priority from a plain string to something like an enum or a number, since sorting "high"/"medium"/"low" as strings won't actually sort in the right order. I'd also think more about how the scheduler should handle tasks that don't fit in the available time instead of just skipping them silently.
+- If I did another iteration, I'd add real validation on the time input in app.py — right now it's just a text box, so someone could type "7:30pm" instead of "07:30" and it would silently get stored as-is, which would quietly break sort_by_time() and find_conflicts() instead of giving a clear error. I'd also want automated tests for app.py itself, not just pawpal_system.py, since right now the UI wiring is only "tested" by me clicking through it manually. And I'd think more about how the scheduler should handle tasks that don't fit in the available time instead of just skipping them silently — maybe surfacing a message about what got left out.
 
 **c. Key takeaway**
 

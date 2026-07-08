@@ -1,6 +1,19 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+** is a Streamlit app that helps a pet owner plan care tasks for their pet(s) —
+add pets and tasks, generate a priority-based daily schedule, and catch scheduling
+conflicts before they happen.
+
+## ✨ Features
+
+- **Owner & pet management** — set your name and available time for the day, add multiple pets, and see each pet's task list at a glance.
+- **Task creation** — give each task a name, duration, priority, an optional time (`HH:MM`), and an optional recurrence (`daily` / `weekly`).
+- **Smart scheduling** — `Scheduler.generate_schedule()` builds today's plan from incomplete, today-dated tasks, sorted by priority, fitted to however much time the owner has.
+- **Sorting** — re-sort the generated schedule by priority or by time of day.
+- **Filtering** — look across every pet's full task list by pet name and/or completion status.
+- **Recurring tasks** — mark a daily or weekly task complete and PawPal+ automatically schedules the next occurrence for that pet.
+- **Conflict detection** — flags any two timed tasks on the same day whose time ranges overlap.
+- Everything persists in `st.session_state` for the length of the browser session, so pets/tasks stick around as you click through the app.
 
 ## Scenario
 
@@ -44,14 +57,77 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Running `python main.py` walks through every scheduler feature end-to-end. Real output
+(dates shown are relative to whatever day you run it):
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+=== 1. Tasks Added Out of Chronological Order ===
+All tasks (in the order they were added):
+  [HIGH  ] Evening Walk         pet=Rex    date=2026-07-07 time=18:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Morning Walk         pet=Rex    date=2026-07-07 time=07:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-07 time=07:15 dur= 10min completed=False recurrence=daily
+  [HIGH  ] Feed Cat             pet=Milo   date=2026-07-07 time=08:00 dur= 10min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-07 time=09:00 dur= 45min completed=False recurrence=weekly
+  [MEDIUM] Clean Litter Box     pet=Milo   date=2026-07-07 time=08:05 dur= 20min completed=False recurrence=none
+
+=== 2. Sorting by Time ===
+Schedule sorted by time:
+  [HIGH  ] Morning Walk         pet=Rex    date=2026-07-07 time=07:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-07 time=07:15 dur= 10min completed=False recurrence=daily
+  [HIGH  ] Feed Cat             pet=Milo   date=2026-07-07 time=08:00 dur= 10min completed=False recurrence=none
+  [MEDIUM] Clean Litter Box     pet=Milo   date=2026-07-07 time=08:05 dur= 20min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-07 time=09:00 dur= 45min completed=False recurrence=weekly
+  [HIGH  ] Evening Walk         pet=Rex    date=2026-07-07 time=18:00 dur= 30min completed=False recurrence=none
+
+=== 3. Filtering by Pet ===
+Tasks for Rex:
+  [HIGH  ] Evening Walk         pet=Rex    date=2026-07-07 time=18:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Morning Walk         pet=Rex    date=2026-07-07 time=07:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-07 time=07:15 dur= 10min completed=False recurrence=daily
+
+Tasks for Milo:
+  [HIGH  ] Feed Cat             pet=Milo   date=2026-07-07 time=08:00 dur= 10min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-07 time=09:00 dur= 45min completed=False recurrence=weekly
+  [MEDIUM] Clean Litter Box     pet=Milo   date=2026-07-07 time=08:05 dur= 20min completed=False recurrence=none
+
+=== 4. Filtering by Completion Status ===
+Completed tasks:
+  [HIGH  ] Evening Walk         pet=Rex    date=2026-07-07 time=18:00 dur= 30min completed=True recurrence=none
+
+Incomplete tasks:
+  [HIGH  ] Morning Walk         pet=Rex    date=2026-07-07 time=07:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-07 time=07:15 dur= 10min completed=False recurrence=daily
+  [HIGH  ] Feed Cat             pet=Milo   date=2026-07-07 time=08:00 dur= 10min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-07 time=09:00 dur= 45min completed=False recurrence=weekly
+  [MEDIUM] Clean Litter Box     pet=Milo   date=2026-07-07 time=08:05 dur= 20min completed=False recurrence=none
+
+=== 5. Recurring Task Behavior ===
+Completing 'Give Medication' (daily) scheduled for 2026-07-07...
+  -> Next occurrence automatically created for 2026-07-08
+Rex's tasks after completing the daily task:
+  [HIGH  ] Evening Walk         pet=Rex    date=2026-07-07 time=18:00 dur= 30min completed=True recurrence=none
+  [HIGH  ] Morning Walk         pet=Rex    date=2026-07-07 time=07:00 dur= 30min completed=False recurrence=none
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-07 time=07:15 dur= 10min completed=True recurrence=daily
+  [HIGH  ] Give Medication      pet=Rex    date=2026-07-08 time=07:15 dur= 10min completed=False recurrence=daily
+
+Completing 'Vet Checkup' (weekly) scheduled for 2026-07-07...
+  -> Next occurrence automatically created for 2026-07-14
+Milo's tasks after completing the weekly task:
+  [HIGH  ] Feed Cat             pet=Milo   date=2026-07-07 time=08:00 dur= 10min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-07 time=09:00 dur= 45min completed=True recurrence=weekly
+  [MEDIUM] Clean Litter Box     pet=Milo   date=2026-07-07 time=08:05 dur= 20min completed=False recurrence=none
+  [MEDIUM] Vet Checkup          pet=Milo   date=2026-07-14 time=09:00 dur= 45min completed=False recurrence=weekly
+
+=== 6. Conflict Detection ===
+  CONFLICT on 2026-07-07: 'Morning Walk' (07:00) overlaps with 'Give Medication' (07:15)
+  CONFLICT on 2026-07-07: 'Feed Cat' (08:00) overlaps with 'Clean Litter Box' (08:05)
+
+=== Final Schedule ===
+Today's Schedule
+-----------------
+[HIGH] Morning Walk (Rex) - 30 min
+[HIGH] Feed Cat (Milo) - 10 min
+[MEDIUM] Clean Litter Box (Milo) - 20 min
 ```
 
 ## 🧪 Testing PawPal+
@@ -116,12 +192,15 @@ See `main.py` for a runnable demo of every feature above, including intentionall
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Run `streamlit run app.py` and follow along:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Set the owner** — enter your name and how many minutes you have available today.
+2. **Add a pet** — fill in the "Add a Pet" form (name, species, age) and submit. It shows up under "Your Pets."
+3. **Add a task** — pick a pet, give the task a name, duration, and priority. Optionally set a time (`HH:MM`) and whether it repeats daily/weekly.
+4. **Mark a task complete** — pick a pet and task under "Mark a Task Complete." If it repeats, PawPal+ tells you the next occurrence's date.
+5. **Generate the schedule** — click "Generate schedule" to build today's plan from today's incomplete tasks, fitted to your available time and sorted by priority.
+6. **Sort the schedule** — use "Sort by priority" or "Sort by time" to reorder the schedule that's currently on screen.
+7. **Filter tasks** — use the pet and completion-status filters to see a specific pet's tasks or just what's done/not done, across all dates.
+8. **Check for conflicts** — click "Check for conflicts" to see any overlapping timed tasks flagged as warnings (or a success message if there aren't any).
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

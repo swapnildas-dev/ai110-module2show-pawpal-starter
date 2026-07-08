@@ -1,0 +1,54 @@
+classDiagram
+
+class Owner {
+    +String name
+    +int available_time
+    +List~Pet~ pets
+    +add_pet(pet)
+    +remove_pet(pet_name)
+    +get_pets()
+}
+
+class Pet {
+    +String name
+    +String species
+    +int age
+    +List~Task~ tasks
+    +add_task(task)
+    +remove_task(task_name)
+    +get_tasks()
+}
+
+class Task {
+    +String name
+    +int duration
+    +String priority
+    +bool completed
+    +String pet_name
+    +String date
+    +String time
+    +String recurrence
+    -Pet _pet
+    +mark_complete()
+    +update_priority(priority)
+}
+
+class Scheduler {
+    +Owner owner
+    +List~Task~ schedule
+    +get_all_tasks()
+    +generate_schedule()
+    +sort_tasks()
+    +sort_by_time()
+    +filter_by_pet(pet_name)
+    +filter_by_completion(completed)
+    +find_conflicts()
+    -_times_overlap(task_a, task_b)
+    +display_schedule()
+}
+
+Owner "1" --> "*" Pet : owns
+Pet "1" --> "*" Task : has
+Scheduler --> Owner : manages
+Scheduler --> Task : schedules
+Task ..> Pet : auto-attached (for recurrence)
