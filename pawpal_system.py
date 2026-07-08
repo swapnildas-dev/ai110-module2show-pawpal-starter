@@ -44,6 +44,7 @@ class Pet:
 
 class Owner:
     def __init__(self, name: str, available_time: int, pets: Optional[List[Pet]] = None):
+        """Create an owner with a name, available time, and an optional list of pets."""
         self.name = name
         self.available_time = available_time
         self.pets = pets if pets is not None else []
@@ -66,6 +67,7 @@ class Scheduler:
     PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 
     def __init__(self, owner: Owner, schedule: Optional[List[Task]] = None):
+        """Create a scheduler for an owner with an optional starting schedule."""
         self.owner = owner
         self.schedule = schedule if schedule is not None else []
 
