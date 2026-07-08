@@ -72,14 +72,22 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting (priority) | `Scheduler.sort_tasks()` | Sorts by priority: high, then medium, then low. |
+| Task sorting (time) | `Scheduler.sort_by_time()` | Uses `sorted()` with a lambda key on each task's `"HH:MM"` time string; tasks with no time are placed last. |
+| Filtering | `Scheduler.filter_by_pet(pet_name)`, `Scheduler.filter_by_completion(completed)` | Filter across every pet's tasks by pet name or by completed/incomplete status. |
+| Conflict handling | `Scheduler.find_conflicts()` | Compares every pair of timed tasks on the same date and flags any whose `time`–`time + duration` ranges overlap. |
+| Recurring tasks | `Task.mark_complete()` | When a task with `recurrence="daily"` or `"weekly"` is marked complete, a new copy of it is automatically created (and attached to the same pet) dated one day or one week later, using `datetime`/`timedelta`. |
+
+### How each piece works
+
+- **Sorting by time**: `Task.time` is stored as an `"HH:MM"` string. `sort_by_time()` calls `sorted()` with `key=lambda task: (task.time is None, task.time or "")`, so zero-padded 24-hour strings compare correctly and undated tasks sort to the end.
+- **Filtering**: both filter methods look across *all* of the owner's pets (not just today's fitted schedule), so you can find a pet's full task history or every completed/incomplete task regardless of date.
+- **Conflict detection**: only tasks that have a `time` set are compared; two tasks conflict if they fall on the same `date` and their `[start, start + duration)` windows overlap.
+- **Recurring tasks**: each `Task` has a `date` (defaults to today) and a `recurrence` (`"daily"`, `"weekly"`, or `None`). `Pet.add_task()` tags the task with a private back-reference to its pet, so when `mark_complete()` runs on a recurring task it can build the next occurrence and add it straight to that pet's task list automatically — no extra wiring needed by the caller.
+
+See `main.py` for a runnable demo of every feature above, including intentionally out-of-order task creation, a live conflict, and a full daily/weekly recurrence cycle.
 
 ## 📸 Demo Walkthrough
 
